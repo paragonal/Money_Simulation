@@ -18,6 +18,7 @@ def run_sim(sim):
         ax.hist(y,bins=int(len(sim.agents)/50),range=(0,sim.fixing_constant),histtype='step')
         ax.plot(x_theory,y_theory)
         sim.update(100)
+        #print(sim.temperature)
 
     a = anim.FuncAnimation(fig, update, frames=10000, repeat=False)
     plt.show()

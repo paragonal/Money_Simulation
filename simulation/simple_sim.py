@@ -8,23 +8,35 @@ class Simulation():
         self.agents = [Agent(starting_money=money_temperature) for x in range(num_agents)]
         self.fixing_constant = self.temperature*int(log(num_agents))
 
-    def update(self, swaps):
+    def update(self, swaps, tax_rate = 0.2, welfare_threshold = 10):
+        taxed_money = 0
         for i in range(swaps):
             amount = random.randint(1, self.temperature)
-            while not random.choice(self.agents).pay(random.choice(self.agents), amount):
-                pass
 
+            a1 = random.choice(self.agents)
+            a2 = random.choice(self.agents)
+            while not a1.can_pay(a2, amount):
+                a1 = random.choice(self.agents)
+                a2 = random.choice(self.agents)
 
+            a1.money -= amount
+            taxed_money += amount * tax_rate
+            a2.money += amount * (1-tax_rate)
 
+        #redistribute all taxed money to poorest agents
+        recipients = list(filter(lambda x: x.money < welfare_threshold, self.agents))
+        for agent in recipients:
+            agent.money += taxed_money/len(recipients)
+            #print(len(recipients))
+        #print(sum([x.money for x in self.agents]))
 
 class Agent():
     def __init__(self, starting_money):
         self.money = starting_money
 
-    def pay(self, other, amount):
+    def can_pay(self, other, amount):
         if self.money >= amount:
-            self.money -= amount
-            other.money += amount
+
             return True
 
         return False

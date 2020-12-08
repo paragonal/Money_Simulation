@@ -1,5 +1,5 @@
 import random
-from math import log
+from math import log, sinh
 
 class Simulation():
 
@@ -8,7 +8,7 @@ class Simulation():
         self.agents = [Agent(starting_money=money_temperature) for x in range(num_agents)]
         self.fixing_constant = self.temperature*int(log(num_agents))
 
-    def update(self, swaps, tax_rate = 0.2, welfare_threshold = 10):
+    def update(self, swaps, tax_rate = 0.1, tax_function = lambda x: sinh(4*x)/sinh(4)/4, welfare_threshold = 50):
         taxed_money = 0
         for i in range(swaps):
             amount = random.randint(1, self.temperature)
@@ -24,6 +24,11 @@ class Simulation():
             a2.money += amount * (1-tax_rate)
 
         #redistribute all taxed money to poorest agents
+        for agent in self.agents:
+            tax = tax_function(agent.money/self.fixing_constant) * agent.money
+            agent.money -= tax
+            taxed_money += tax
+
         recipients = list(filter(lambda x: x.money < welfare_threshold, self.agents))
         for agent in recipients:
             agent.money += taxed_money/len(recipients)
